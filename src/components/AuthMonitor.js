@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Header, Icon, Modal, Form, Message } from "semantic-ui-react";
+import { Button, Header, Icon, Modal, Form, Message, Container } from "semantic-ui-react";
 import web3 from "../web3";
 import bouncer from "../bouncer";
 
@@ -8,7 +8,8 @@ export default class Register extends Component {
 		message: "Please present identification",
 		errorMessage: "",
 		processing: false,
-		message_color: "black"
+		message_color: "black",
+		render: true
 	};
 
 	handleOpen = () => this.setState({ modalOpen: true });
@@ -31,8 +32,7 @@ export default class Register extends Component {
 		});
 
 		//Load default routing data
-		let AccessListId = this.state.AccessListId;
-		let PublicKeyId = this.state.fetchPublicKeyId()
+		let PublicKeyId = this.props.fetchPublicKeyId();
 
 		this.setState({
 		    message: "Skale-ing the walls looking for your ePuk ..."
@@ -43,7 +43,9 @@ export default class Register extends Component {
 		this.state.fromAddress = this.state.metaAccount.address.toLowerCase();
 
 
-		let ePuk = wait bouncer.methods.getKey(this.state.AccessListId, PublicKeyId).call({
+		console.log(this.props.AccessListId)
+
+		let ePuk = await bouncer.methods.getKey(this.props.AccessListId, PublicKeyId).call({
 				        from: this.state.metaAccount.address
 				});
 
@@ -52,16 +54,16 @@ export default class Register extends Component {
 		});
 
 		// pass ePuk to enigma for decryption, temp fix pre-decrypted
-		let Puk = ePuk
+		let Puk = ePuk;
 
-		let challenge = Date.Now()
+		let challenge = Date.now();
 
 		this.setState({
 		    message: "Puk found, are your creds up to the challenge ???"
 		});
 
 		// Use Puk and Challenge/Response to verify the sig/response
-		sig_verified = this.state.postChallengeResponse(challenge, Puk);
+		let sig_verified = this.props.postChallengeResponse(challenge, Puk);
 
 		if (sig_verified){
 			//Grant access
@@ -78,21 +80,26 @@ export default class Register extends Component {
 		}
 
 		// Give some time for people to read their status
-		setimeout({}, 1000 * 5); 
+		setTimeout(function() {
+				this.setState({
+				    processing: false,
+				    message: "Please present identification",
+				    message_color: "black"
+				});
+			}.bind(this)
+			, 1000 * 5)
 
 	} catch (err) {
             this.setState({ errorMessage: err.message });
         }
-
-        this.setState({
-            processing: false,
-            message: "Please present identification",
-	    message_color: "black"
-        });
     };
 
     render() {
-        return (
+
+	let renderContainer = false;
+
+	if(this.state.render) {
+		renderContainer = 
             <Container>
 		    <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
 			<Message error header="Oops!" content={this.state.errorMessage} />
@@ -103,6 +110,9 @@ export default class Register extends Component {
 			<h2>{this.state.message}</h2>
 		    </Form>
 	    </Container>
+	}
+        return (
+		renderContainer
         );
     }
 }

@@ -10,12 +10,10 @@ class App extends Component {
 		value: "",
 		message: "",
 		accessListId: "0",
-		accounts: [
-			{
+		account: {
 				"address":"0x8d919cE3B5587EdADAe99573F4e487f51085b14C",
 				"privateKey": "0xeb6ced6eb21f79ec8c372367f59da36cdb1aae52842525f8bc20abc99c5b654a"
 			}
-		]
 	};
 
 	//Bind our methods
@@ -41,7 +39,8 @@ class App extends Component {
 		return (
 			<Container>
 				<AuthMonitor
-				        AccessListId={this.accessListId}
+					account={this.state.account}
+				        AccessListId={this.state.accessListId}
 				        fetchPublicKeyId={this.fetchPublicKeyId_MockedYubikey}
 					postChallengeResponse={this.postChallengeResponse}
 				/>
@@ -51,6 +50,24 @@ class App extends Component {
 
 	//Temp YubiKey Functions
 	fetchPublicKeyId_MockedYubikey(){
+		await fetch("http://localhost:80", {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'API-Key': 'secret'
+				}
+			}
+			})
+			.then(res => res.json())
+			.then(
+				(result) => {
+					console.log(result)
+				},
+				(error) => {
+					console.log(error.message)
+				}
+			)
+			
 		return "cooperww32@gmail.com";
 	}
 
