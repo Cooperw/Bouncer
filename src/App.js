@@ -50,15 +50,9 @@ class App extends Component {
 
 	//Temp YubiKey Functions
 	fetchPublicKeyId_MockedYubikey(){
-		await fetch("http://localhost:80", {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'API-Key': 'secret'
-				}
-			}
+		fetch("http://localhost:80", {
+				method: 'GET'
 			})
-			.then(res => res.json())
 			.then(
 				(result) => {
 					console.log(result)
